@@ -3,9 +3,12 @@ package com.idc.examples.sunshine;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,7 @@ import android.widget.TextView;
 
 public class DetailActivity extends AppCompatActivity {
 
+    private String mForecast;
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,7 +24,7 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, new DetailFragment())
                     .commit();
         }
     }
@@ -51,9 +55,37 @@ public class DetailActivity extends AppCompatActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class DetailFragment extends Fragment {
 
-        public PlaceholderFragment() {
+        private static final String FORECAST_SHARE_HASHTAG = "#SunshineApp";
+        private String mForeCast;
+
+        public DetailFragment() {
+            setHasOptionsMenu(true);
+        }
+
+        @Override
+        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+            super.onCreateOptionsMenu(menu, inflater);
+
+            inflater.inflate(R.menu.menu_detailfragment, menu);
+
+            MenuItem menuItem = menu.findItem(R.id.action_share);
+            ShareActionProvider provider = (ShareActionProvider)MenuItemCompat.getActionProvider(menuItem);
+
+            if (provider!=null){
+                provider.setShareIntent(createShareIntent());
+            }
+
+        }
+
+        private Intent createShareIntent() {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_TEXT, mForeCast + FORECAST_SHARE_HASHTAG);
+
+            return shareIntent;
         }
 
         @Override
@@ -65,8 +97,8 @@ public class DetailActivity extends AppCompatActivity {
             Intent intent = getActivity().getIntent();
             if (intent!=null && intent.hasExtra(Intent.EXTRA_TEXT))
             {
-                String forecast = intent.getStringExtra(Intent.EXTRA_TEXT);
-                ((TextView)rootView.findViewById(R.id.detail_text)).setText(forecast);
+                mForeCast = intent.getStringExtra(Intent.EXTRA_TEXT);
+                ((TextView)rootView.findViewById(R.id.detail_text)).setText(mForeCast);
             }
 
             return rootView;
